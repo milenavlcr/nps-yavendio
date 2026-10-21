@@ -186,6 +186,7 @@
       font-size: 15px;
       margin-bottom: 8px;
     }
+    .store label span,
     .feedback label span { font-weight: 400; color: var(--text-dim); }
 
     textarea {
@@ -284,8 +285,8 @@
         </fieldset>
 
         <div class="store" id="store-group">
-          <label for="loja">Nome da sua loja</label>
-          <input type="text" id="loja" name="loja" maxlength="100" autocomplete="organization"
+          <label for="loja">Nome da sua loja <span>(obrigatório)</span></label>
+          <input type="text" id="loja" name="loja" maxlength="100" autocomplete="organization" required aria-required="true"
             placeholder="Ex.: Loja da Ana" aria-describedby="store-error">
           <p class="error" id="store-error" role="alert">Escreva o nome da sua loja para enviar.</p>
         </div>
