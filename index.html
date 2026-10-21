@@ -158,7 +158,28 @@
       75% { transform: translateX(6px); }
     }
 
+    .store { margin-top: 28px; }
+    .store input {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--neutral);
+      border-radius: var(--radius);
+      background: var(--background);
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--ink900);
+    }
+    .store input:focus {
+      outline: none;
+      border-color: var(--plum400);
+      background: #FFFFFF;
+    }
+    .store.has-error input { border-color: #F3B8B3; }
+    .store.has-error .error { display: block; }
+
     .feedback { margin-top: 28px; }
+    .store label,
     .feedback label {
       display: block;
       font-weight: 600;
@@ -262,6 +283,13 @@
           <p class="error" id="score-error" role="alert">Escolha uma nota de 0 a 10 para enviar.</p>
         </fieldset>
 
+        <div class="store" id="store-group">
+          <label for="loja">Nome da sua loja</label>
+          <input type="text" id="loja" name="loja" maxlength="100" autocomplete="organization"
+            placeholder="Ex.: Loja da Ana" aria-describedby="store-error">
+          <p class="error" id="store-error" role="alert">Escreva o nome da sua loja para enviar.</p>
+        </div>
+
         <div class="feedback">
           <label for="comentario">O que mais pesou na sua nota? <span>(opcional)</span></label>
           <textarea id="comentario" name="comentario" maxlength="1000"
@@ -290,6 +318,18 @@
     const scoreGroup = document.getElementById('score-group');
     const card = document.getElementById('card');
     const submitBtn = document.getElementById('submit-btn');
+    const storeGroup = document.getElementById('store-group');
+    const storeInput = document.getElementById('loja');
+
+    // Se o link vier com ?cliente=nome-da-loja, o campo já aparece preenchido
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('cliente')) {
+      storeInput.value = params.get('cliente').replace(/-/g, ' ');
+    }
+
+    storeInput.addEventListener('input', function () {
+      storeGroup.classList.remove('has-error');
+    });
 
     // Ao escolher uma nota, some o aviso de erro
     form.querySelectorAll('input[name="nota"]').forEach(function (input) {
@@ -301,21 +341,26 @@
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
 
+      const loja = storeInput.value.trim();
       const selected = form.querySelector('input[name="nota"]:checked');
-      if (!selected) {
-        scoreGroup.classList.add('has-error');
-        scoreGroup.classList.remove('shake');
-        void scoreGroup.offsetWidth; // reinicia a animação
-        scoreGroup.classList.add('shake');
-        scoreGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      if (!loja) storeGroup.classList.add('has-error');
+      if (!selected) scoreGroup.classList.add('has-error');
+
+      if (!loja || !selected) {
+        const firstError = !selected ? scoreGroup : storeGroup;
+        firstError.classList.remove('shake');
+        void firstError.offsetWidth; // reinicia a animação
+        firstError.classList.add('shake');
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (selected) storeInput.focus({ preventScroll: true });
         return;
       }
 
-      const params = new URLSearchParams(window.location.search);
       const data = {
         nota: Number(selected.value),
         comentario: document.getElementById('comentario').value.trim(),
-        cliente: params.get('cliente') || '', // ex.: index.html?cliente=loja-da-ana
+        cliente: loja, // vai para a coluna "Cliente" da planilha
         enviado_em: new Date().toISOString()
       };
 
